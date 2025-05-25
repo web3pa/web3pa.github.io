@@ -30,7 +30,7 @@ This solution provides a simple web interface to generate an VAULTA smart contra
 
 ## Deployment Requirements
 
-- EOSIO account with sufficient permissions
+- Vaulta account with sufficient permissions
 - Anchor Wallet connection
 - Access to Vaulta Web IDE (https://ide.eosnetwork.com)
 
