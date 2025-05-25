@@ -167,3 +167,8 @@ function copyToClipboard() {
     
     window.getSelection().removeAllRanges();
 }
+function copyDonationAddress() {
+    navigator.clipboard.writeText('donatetodev1')
+        .then(() => alert('Donation address copied! Thank you for your support ❤️'))
+        .catch(err => console.error('Failed to copy:', err));
+}
