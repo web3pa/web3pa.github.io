@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaulta RAM Cleaner Contract Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Vaulta RAM Cleaner Contract Generator</h1>
+        <p>Create a specialized contract to free RAM from unused Vaulta contracts by entering your contract account name below.</p>
+        
+        <div class="warning">
+            <h3>Important Notice</h3>
+            <p>This contract will completely remove your Vaulta contract from the blockchain and free up RAM. This action is irreversible and will delete all contract data and code.</p>
+            <p>Only use this if you're certain you no longer need the contract and want to reclaim the RAM.</p>
+        </div>
+        
+        <div class="form-group">
+            <label for="contractAccount">Your Contract Account Name:</label>
+            <input type="text" id="contractAccount" placeholder="e.g., myvaultacontract">
+        </div>
+        
+        <button id="generateBtn">Generate RAM Cleaner Contract</button>
+        
+        <div id="outputSection" class="output-section">
+            <h2>Your RAM Cleaner Contract Files</h2>
+            <p>These files have been customized for your account to remove your Vaulta contract and free RAM.</p>
+            
+            <div class="file-tabs">
+                <div class="file-tab active" data-file="hpp">[yourcontract].hpp</div>
+                <div class="file-tab" data-file="cpp">[yourcontract].cpp</div>
+                <div class="file-tab" data-file="guide">Deployment Guide</div>
+            </div>
+            
+            <div class="file-content">
+                <pre id="hppContent"></pre>
+                <pre id="cppContent" style="display: none;"></pre>
+                <div id="guideContent" style="display: none;"></div>
+                <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
