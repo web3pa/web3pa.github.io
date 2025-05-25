@@ -94,7 +94,7 @@ function generateFiles(contractAccount) {
             <div class="guide-step">
                 <span class="guide-step-number">3</span>
                 <strong>Create New Project</strong>
-                <p>In Vaulta, create a new EOSIO contract project and upload your two contract files.</p>
+                <p>In Vaulta IDE, create a new EOSIO contract project and upload your two contract files.</p>
             </div>
             
             <div class="guide-step">
