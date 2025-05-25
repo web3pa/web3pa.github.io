@@ -1,14 +1,14 @@
-# EOSIO RAM Cleaner Contract Generator
+# VAULTA RAM Cleaner Contract Generator
 
 ## Overview
 
-This solution provides a simple web interface to generate an EOSIO smart contract specifically designed to free RAM by completely removing unused Vaulta contracts from the blockchain. The generated contract will permanently delete the contract code and free up the associated RAM allocation.
+This solution provides a simple web interface to generate an VAULTA smart contract specifically designed to free RAM by completely removing unused Vaulta contracts from the blockchain. The generated contract will permanently delete the contract code and free up the associated RAM allocation.
 
 ## Key Features
 
 - Generates ready-to-use `.hpp` and `.cpp` files customized with your contract account name
 - Provides clear deployment instructions
-- Validates EOSIO account name format
+- Validates VAULTA account name format
 - One-click copy functionality for generated files
 
 ## Important Notes About RAM Cleaning
@@ -32,7 +32,7 @@ This solution provides a simple web interface to generate an EOSIO smart contrac
 
 - EOSIO account with sufficient permissions
 - Anchor Wallet connection
-- Access to Vaulta Web IDE (https://vaulta.io)
+- Access to Vaulta Web IDE (https://ide.eosnetwork.com)
 
 ## How to Use
 
