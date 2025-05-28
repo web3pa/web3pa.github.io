@@ -1,20 +1,35 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const tabs = document.querySelectorAll('.file-tab');
-    const outputSection = document.getElementById('outputSection');
-    
     // Tab switching
+    const tabs = document.querySelectorAll('.file-tab');
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
+            // Remove active class from all tabs
             tabs.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked tab
             this.classList.add('active');
             
+            // Show corresponding content
             const fileType = this.dataset.file;
-            document.getElementById('hppContent').classList.toggle('hidden', fileType !== 'hpp');
-            document.getElementById('cppContent').classList.toggle('hidden', fileType !== 'cpp');
-            document.getElementById('guideContent').classList.toggle('hidden', fileType !== 'guide');
+            document.getElementById('hppContent').style.display = 'none';
+            document.getElementById('cppContent').style.display = 'none';
+            document.getElementById('guideContent').style.display = 'none';
             
-            // Hide copy button for guide tab
-            document.querySelector('.copy-btn').style.display = fileType === 'guide' ? 'none' : 'block';
+            // Show/hide copy button based on tab
+            const copyBtn = document.querySelector('.copy-btn');
+            if (fileType === 'guide') {
+                copyBtn.style.display = 'none';
+            } else {
+                copyBtn.style.display = 'block';
+            }
+            
+            if (fileType === 'hpp') {
+                document.getElementById('hppContent').style.display = 'block';
+            } else if (fileType === 'cpp') {
+                document.getElementById('cppContent').style.display = 'block';
+            } else if (fileType === 'guide') {
+                document.getElementById('guideContent').style.display = 'block';
+            }
         });
     });
     
@@ -27,48 +42,97 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Validate EOSIO account name format
         if (!/^[a-z1-5.]{1,12}$/.test(contractAccount)) {
-            alert('Account name must be 1-12 characters (a-z, 1-5, .)');
+            alert('Invalid EOSIO account name. Must be 1-12 characters (a-z, 1-5, .)');
             return;
         }
         
+        // Generate customized files
         generateFiles(contractAccount);
         
-        // Update UI
+        // Update tab names with actual contract name
         document.querySelector('[data-file="hpp"]').textContent = `${contractAccount}.hpp`;
         document.querySelector('[data-file="cpp"]').textContent = `${contractAccount}.cpp`;
         
+        // Show output section
+        const outputSection = document.getElementById('outputSection');
         outputSection.style.display = 'block';
+        
+        // Scroll to and focus the output section
         outputSection.scrollIntoView({ behavior: 'smooth' });
-        outputSection.tabIndex = -1;
+        outputSection.setAttribute('tabindex', '-1');
         outputSection.focus();
     });
 });
 
 function generateFiles(contractAccount) {
     // Generate .hpp file
-    const hppContent = `#include <eosio/eosio.hpp>\n\nusing namespace eosio;\n\nclass [[eosio::contract("${contractAccount}")]] ${contractAccount} : public contract {\npublic:\n    ${contractAccount}(name receiver, name code, datastream<const char*> ds) \n    : contract(receiver, code, ds) {}\n\n    [[eosio::action]] void remove();\n};`;
+    const hppContent = `#include <eosio/eosio.hpp>\n\nusing namespace eosio;\n\nclass [[eosio::contract("${contractAccount}")]] ${contractAccount} : public contract {\npublic:\n    // Minimal RAM cleaner constructor\n    ${contractAccount}(name receiver, name code, datastream<const char*> ds) \n    : contract(receiver, code, ds) {}\n\n    // Action to remove contract and free RAM\n    [[eosio::action]] void remove();\n};`;
     
-    // Generate .cpp file
-    const cppContent = `#include "${contractAccount}.hpp"\n//contractName:${contractAccount}\n\nvoid ${contractAccount}::remove() {\n    require_auth(get_self());\n    print("Removing contract ", get_self(), " and freeing RAM");\n}\n\nextern "C" void apply(uint64_t r, uint64_t c, uint64_t a) {\n    if (r == c) {\n        ${contractAccount} inst(name(r), name(c), datastream<const char*>(nullptr, 0));\n        if (a == "remove"_n.value) {\n            inst.remove();\n        }\n    }\n}`;
+    // Generate .cpp file with contractName comment
+    const cppContent = `#include "${contractAccount}.hpp"\n//contractName:${contractAccount}\n\nvoid ${contractAccount}::remove() {\n    // Only the contract account itself can remove it\n    require_auth(get_self());\n    \n    // This will completely remove the contract and free RAM\n    print("Removing contract ", get_self(), " and freeing RAM. This action is irreversible!");\n}\n\n// Apply handler for the remove action\nextern "C" void apply(uint64_t r, uint64_t c, uint64_t a) {\n    if (r == c) {\n        ${contractAccount} inst(name(r), name(c), datastream<const char*>(nullptr, 0));\n        if (a == "remove"_n.value) {\n            inst.remove();\n        }\n    }\n}`;
     
-    // Generate guide
+    // Generate deployment guide
     const guideContent = `
         <div class="guide">
-            <h3>Deployment Guide</h3>
-            <ol>
-                <li>Save files as <strong>${contractAccount}.hpp</strong> and <strong>${contractAccount}.cpp</strong></li>
-                <li>Open <a href="https://vaulta.io" target="_blank">Vaulta Web IDE</a></li>
-                <li>Create new project and upload files</li>
-                <li>Compile and deploy</li>
-                <li>Execute: <code>cleos push action ${contractAccount} remove '[]' -p ${contractAccount}@active</code></li>
-            </ol>
+            <h3>How to Deploy Your RAM Cleaner Contract</h3>
+            <p>Follow these steps to deploy your contract and free RAM from your unused Vaulta contract:</p>
+            
+            <div class="guide-step">
+                <span class="guide-step-number">1</span>
+                <strong>Save Your Contract Files</strong>
+                <p>Copy the generated files above and save them as <code>${contractAccount}.hpp</code> and <code>${contractAccount}.cpp</code> in a new folder.</p>
+            </div>
+            
+            <div class="guide-step">
+                <span class="guide-step-number">2</span>
+                <strong>Open Vaulta Web IDE</strong>
+                <p>Go to <a href="https://ide.eosnetwork.com" target="_blank">Vaulta Web IDE</a> and connect your Anchor Wallet with the account that owns the contract.</p>
+            </div>
+            
+            <div class="guide-step">
+                <span class="guide-step-number">3</span>
+                <strong>Arrange the Contract Files</strong>
+                <p>Rename .hpp file in include folder to ${contractAccount}.hpp , and replace its code with the generated code from ${contractAccount}.hpp</p>
+                <p>Rename .cpp file in root folder to ${contractAccount}.cpp , and replace its code with the generated code from ${contractAccount}.cpp</p>
+                </div>
+            
+            <div class="guide-step">
+                <span class="guide-step-number">4</span>
+                <strong>Connect Wallet</strong>
+                <p>Import Your Contract Account ${contractAccount} into Any EOSIO/Valuta Supported Wallet</p>
+                <p>Change the deployment Setting on the WEB IDE to <b>Wallet</b> and connect</p>
+            </div>
+
+            <div class="danger-step">
+                <span class="guide-step-number">5</span>
+                <strong>Deploy to Blockchain (Irreversible!)</strong>
+                <p>Now Click Build and Deploy, Once compiled successfully, select your contract account (${contractAccount}) when prompted by Anchor Wallet.</p>
+                <p>This will overwrite your existing Vaulta contract.</p>
+            </div>
+            
+            <div class="guide-step">
+                <span class="guide-step-number">6</span>
+                <strong>Execute the RAM Cleaner</strong>
+                <p>After deployment, execute the cleos remove action:</p>
+                <pre> <code> ${contractAccount} remove '[]' -p ${contractAccount}@active</code></pre>
+                <p>Or use the Vaulta interface to send the action.</p>
+            </div>
+            
             <div class="warning">
-                <p><strong>⚠️ Warning:</strong> This will permanently delete your contract and free RAM (expect <20kb remaining).</p>
+                <h4>Important Notes</h4>
+                <ul>
+                    <li>This action is permanent and cannot be undone</li>
+                    <li>All contract data and code will be deleted</li>
+                    <li>RAM will be returned to the contract account owner</li>
+                    <li>Make sure you have backups of any important data</li>
+                </ul>
             </div>
         </div>
     `;
     
+    // Display the generated content
     document.getElementById('hppContent').textContent = hppContent;
     document.getElementById('cppContent').textContent = cppContent;
     document.getElementById('guideContent').innerHTML = guideContent;
@@ -77,17 +141,34 @@ function generateFiles(contractAccount) {
 function copyToClipboard() {
     const activeTab = document.querySelector('.file-tab.active');
     const fileType = activeTab.dataset.file;
-    let content;
+    let contentToCopy;
     
-    if (fileType === 'hpp') content = document.getElementById('hppContent');
-    else if (fileType === 'cpp') content = document.getElementById('cppContent');
-    else return;
+    if (fileType === 'hpp') {
+        contentToCopy = document.getElementById('hppContent');
+    } else if (fileType === 'cpp') {
+        contentToCopy = document.getElementById('cppContent');
+    } else {
+        return; // No action for guide tab
+    }
     
-    navigator.clipboard.writeText(content.textContent)
-        .then(() => alert('Copied to clipboard!'))
-        .catch(err => alert('Failed to copy: ' + err));
+    const range = document.createRange();
+    range.selectNode(contentToCopy);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            alert('Copied to clipboard!');
+        } else {
+            alert('Failed to copy. Please try again.');
+        }
+    } catch (err) {
+        alert('Error copying text: ' + err);
+    }
+    
+    window.getSelection().removeAllRanges();
 }
-
 function copyDonationAddress() {
     navigator.clipboard.writeText('donatetodev1')
         .then(() => alert('Donation address copied! Thank you for your support ❤️'))
